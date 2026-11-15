@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="X-Aqua 本機水質資料管理：新增、查詢、修改、軟刪除、合併與 CSV 匯出。"><meta name="theme-color" content="#082c40"><title>水質資料管理｜X-Aqua</title><link rel="stylesheet" href="../assets/style.css"><script src="../assets/app.js" defer></script><script src="../assets/water-data-store.js" defer></script><script src="../assets/water-data.js" defer></script></head>
+<body><a class="skip-link" href="#main">跳至主要內容</a><header class="site-header"><div class="nav-wrap"><a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true">≈</span> X-Aqua<span class="brand-sub">智慧水產養殖</span></a><nav aria-label="主要導覽"><a href="../index.html">首頁</a><a href="../pages/water-quality.html" aria-current="location">水質管理</a><a href="../pages/shrimp-health.html">白蝦健康</a><a href="../pages/feeding-management.html">飼料投餵</a></nav></div></header>
+<main id="main"><section class="page-hero"><div class="container"><a class="back-link" href="water-quality.html">← 返回水質知識</a><p class="eyebrow">PHASE 01 / 本機資料工作區</p><h1>水質資料管理</h1><p>記錄、查詢與整理每一次人工量測。</p></div></section>
+<section class="container section water-workspace" aria-label="水質資料工作區">
+<aside class="local-notice"><strong>儲存在此瀏覽器</strong><p>沒有雲端同步、登入或感測器連線。清除瀏覽器資料會遺失紀錄；請定期匯出。測試數值不代表實際池況或養殖建議。</p><p id="lock-notice"></p></aside>
+<noscript><p class="error-text">請啟用 JavaScript 才能使用新增、查詢及儲存功能。</p></noscript>
+<p id="workspace-message" class="workspace-message" role="status" aria-live="polite">正在讀取本機資料…</p>
+<div id="water-controls" hidden>
+<div class="metric-switches" aria-label="選擇核心指標">
+<button type="button" class="metric-switch" data-metric="temperature_c" aria-pressed="false"><span>水溫</span><strong data-reading="temperature_c">—</strong><small>°C</small></button>
+<button type="button" class="metric-switch" data-metric="ph" aria-pressed="false"><span>pH</span><strong data-reading="ph">—</strong><small>無單位</small></button>
+<button type="button" class="metric-switch" data-metric="dissolved_oxygen_mg_l" aria-pressed="false"><span>DO（溶氧）</span><strong data-reading="dissolved_oxygen_mg_l">—</strong><small>mg/L</small></button>
+<button type="button" class="metric-switch" data-metric="salinity_ppt" aria-pressed="false"><span>鹽度</span><strong data-reading="salinity_ppt">—</strong><small>ppt</small></button>
+</div><p class="muted">卡片顯示目前查詢結果中最新的有效狀態紀錄；缺測顯示「—」。切換指標會標示對應欄位。</p>
+<div class="data-toolbar" aria-label="六項資料操作">
+<button type="button" id="new-record" class="data-button primary">＋ 新增</button>
+<button type="button" id="open-query" class="data-button">查詢</button>
+<button type="button" id="edit-selected" class="data-button">修改</button>
+<button type="button" id="delete-selected" class="data-button">刪除</button>
+<button type="button" id="merge-selected" class="data-button">合併預覽</button>
+<button type="button" id="export-csv" class="data-button">CSV 匯出</button>
+</div>
+<section id="editor-panel" class="data-panel" hidden aria-labelledby="editor-title"><h2 id="editor-title">新增人工量測</h2>
+<form id="record-form"><div class="data-form-grid"><label>池號<input id="record-pond" name="pond" required maxlength="80" autocomplete="off"></label><label>量測時間（此裝置時區）<input id="record-time" name="time" type="datetime-local" step="1" required></label>
+<label>水溫（°C）<input name="temperature_c" type="number" step="any"></label><label>pH（無單位）<input name="ph" type="number" step="any"></label>
+<label>DO（mg/L）<input name="dissolved_oxygen_mg_l" type="number" min="0" step="any"></label><label>鹽度（ppt）<input name="salinity_ppt" type="number" min="0" step="any"></label>
+</div><p class="muted">至少填寫一項；留白表示缺測，不等於 0。時間轉為 UTC 保存。來源固定人工輸入，品質預設「未覆核」；修改時池號與時間鎖定。</p>
+<label class="check-label"><input id="record-test" type="checkbox" checked> 這是測試資料（預設勾選）</label>
+<label>操作原因<textarea id="record-reason" maxlength="1000" required rows="2"></textarea></label>
+<div class="data-toolbar"><button type="submit" class="data-button primary">儲存紀錄</button><button type="button" id="cancel-edit" class="data-button">取消</button></div><p id="editor-error" class="error-text" role="alert"></p></form></section>
+<section class="data-panel" aria-labelledby="query-title"><h2 id="query-title">查詢紀錄</h2><form id="query-form"><div class="data-form-grid query-grid">
+<label>池號包含<input id="filter-pond" maxlength="80"></label><label>生命週期<select id="filter-status"><option value="active">有效紀錄</option><option value="deleted">已軟刪除</option><option value="superseded">已合併取代</option><option value="all">全部（含歷史）</option></select></label>
+<label>開始時間（含）<input id="filter-from" type="datetime-local" step="1"></label><label>結束時間（不含）<input id="filter-to" type="datetime-local" step="1"></label>
+<label>品質狀態<select id="filter-quality"><option value="">全部品質</option><option value="unreviewed">未覆核</option><option value="valid">已確認</option><option value="suspect">可疑</option><option value="rejected">不採用</option></select></label><label>資料來源<select id="filter-source"><option value="">全部來源</option><option value="manual">人工輸入</option><option value="sensor">感測器（尚未接入）</option></select></label>
+</div><div class="data-toolbar"><button type="submit" class="data-button primary">套用查詢</button><button type="button" id="reset-query" class="data-button">重設查詢</button></div></form></section>
+<section class="data-panel" aria-labelledby="records-title"><div class="records-heading"><h2 id="records-title">量測紀錄</h2><p id="result-count"></p></div><p id="selection-count" class="muted">尚未選取紀錄。</p><p class="muted">修改與刪除請選一筆；合併請選至少兩筆同池、同量測時間的有效人工紀錄。</p>
+<div class="data-table-scroll" tabindex="0" role="region" aria-label="量測資料表，可橫向捲動"><table class="data-table"><caption class="sr-only">人工量測紀錄與操作</caption><thead><tr><th scope="col">選取</th><th scope="col">池號／量測時間</th><th scope="col" data-column="temperature_c">水溫 °C</th><th scope="col" data-column="ph">pH</th><th scope="col" data-column="dissolved_oxygen_mg_l">DO mg/L</th><th scope="col" data-column="salinity_ppt">鹽度 ppt</th><th scope="col">來源／品質／版本</th><th scope="col">狀態／資料標記</th><th scope="col">操作</th></tr></thead><tbody id="record-rows"></tbody></table></div>
+</section>
+<details class="data-panel"><summary>功能演練：載入測試資料</summary><p>不會自動建立數值。按下後新增兩筆明確標示「測試資料」的同池同時間紀錄，供衝突合併演練；這是測試匯入情境，一般新增仍拒絕同池同時間重複。</p><button type="button" id="load-demo" class="data-button">載入兩筆測試資料</button></details>
+<section class="data-panel" aria-labelledby="audit-title"><h2 id="audit-title">操作與合併歷程</h2><p class="muted">保留本機前後快照與操作原因。這不是伺服器稽核，使用者可透過開發工具更動或清除。</p><div id="audit-log"></div></section>
+</div></section>
+<dialog id="merge-dialog" class="data-dialog" aria-labelledby="merge-title"><form id="merge-form"><h2 id="merge-title">合併前預覽</h2><p>各欄須明確選擇來源，不自動平均或捨棄衝突。原始紀錄保留並標記「已合併取代」，另建立新紀錄。</p><div id="merge-options"></div><label>合併原因<textarea id="merge-reason" maxlength="1000" required rows="2"></textarea></label><label class="check-label"><input id="merge-confirm" type="checkbox" required> 我已檢查衝突與來源，確認建立合併紀錄。</label><p id="merge-error" class="error-text" role="alert"></p><div class="data-toolbar"><button type="submit" class="data-button primary">確認合併並保留來源</button><button type="button" data-close="merge-dialog" class="data-button">取消</button></div></form></dialog>
+<dialog id="action-dialog" class="data-dialog" aria-labelledby="action-title"><form id="action-form"><h2 id="action-title"></h2><p id="action-description"></p><label>操作原因<textarea id="action-reason" maxlength="1000" required rows="2"></textarea></label><p id="action-error" class="error-text" role="alert"></p><div class="data-toolbar"><button type="submit" class="data-button primary">確認操作</button><button type="button" data-close="action-dialog" class="data-button">取消</button></div></form></dialog>
+<dialog id="history-dialog" class="data-dialog" aria-labelledby="history-title"><h2 id="history-title">紀錄版本與來源</h2><pre id="history-content"></pre><button type="button" data-close="history-dialog" class="data-button">關閉歷程</button></dialog></main><footer><div class="container footer-inner"><a class="brand" href="../index.html">X-Aqua</a><p>從理解水域，開始智慧養殖。</p><span>知識展示網站 · v0.1</span></div></footer></body></html>
